@@ -67,21 +67,7 @@ export default class RedisStore<K extends string, V extends Base> extends DataSt
 			return null;
 		}
 	}
-
-	// Yeah John's not gonna like this
-	// @ts-ignore
-	public get size(): Promise<number> {
-		return promisify(this.#redis.dbsize)();
-	}
-
-	// Yeah John's not honna like this
-	[Symbol.asyncIterator]: AsyncIterator<V>
-	// @ts-ignore
-	public async values(): Promise<AsyncIterator<V, number, undefined>> {
-		// @ts-ignore
-		return (await this.#redis.keys("*"))[Symbol.asyncIterator]();
-	}
-
+	
 	public async set(id: K, structure: V, overwrite: boolean = false): Promise<V | null> {
 		if (await this.size >= this.limit && overwrite) {
 			// this.#redis.lpop()
@@ -90,4 +76,16 @@ export default class RedisStore<K extends string, V extends Base> extends DataSt
 		return structure ?? null;
 	}
 
+
+	// @ts-ignore
+	public get size(): Promise<number> {
+		return this.#redis.dbsize();
+	}
+
+	[Symbol.asyncIterator]: AsyncIterator<string[]>
+	// @ts-ignore
+	public values(): AsyncIterable<string[]> {
+		// @ts-ignore
+		return (this.#redis.keys("*"))[Symbol.asyncIterator]();
+	}
 }
